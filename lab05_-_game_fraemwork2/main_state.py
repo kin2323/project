@@ -140,7 +140,7 @@ class InputSystem:
             self.it = iter(self.KeyBuffer)
             for i in range(SKILL_MAXNUM):
                 for j in range(len(self.KeyBuffer)):
-                    if(j<skill[i].size):
+                    if len(self.KeyBuffer) == skill[i].size:
                         if next(self.it) == skill[i].key[j]:
                             print("correct")
                             #print(skill[i].key[j])
