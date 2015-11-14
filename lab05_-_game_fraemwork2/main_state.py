@@ -22,6 +22,7 @@ boy = None
 skill = None
 grass = None
 InputSys = None
+monster = None
 
 #사실 스킬아니고 캐릭터의 key 클래스
 class Skill:
@@ -32,6 +33,10 @@ class Skill:
         self.frames = None
         self.key = None
         self.size = 0
+        self.height = 0;
+        self.width = 0;
+        def get_bb(self,x,y):
+            return x - self.width/2, y - self.height/2,x+self.width/2,y+self.height/2
 
 #맵
 class Grass:
@@ -39,19 +44,35 @@ class Grass:
         self.image = load_image('map.png')
     def draw(self):
         self.image.draw(400,300)
+#몬스터
+class Monster:
+    def __init__(self):
+        self.image = load_image('mon_walk.png')
+        self.frame = 0
+        self.x = 100
+    def draw(self):
+        self.image.clip_draw(self.frame*114,0,114,122,self.x, 90)
+    def update(self):
+        self.frame = (self.frame+1)%6
 #플레이어
 class Boy:
     def __init__(self):
         self.x, self.y = 300,90
         self.frame = random.randint(0,7)
-        self.image = load_image('평타.jpg')
-        self.image1 = load_image('2.png')
-        self.image2 = load_image('1.png')
-        self.image3 = load_image('0.png')
+        self.image = load_image('skill2_right.png')
+        self.image1 = load_image('skill3_right.png')
+        self.image2 = load_image('skill1_right.png')
+        self.image3 = load_image('walk_right.png')
         #self.dir = 1
         self.KeyNum = 0
         self.State = STATE_IDLE
         self.accel = random.randint(3,7)
+        self.width = 100
+        self.height = 133
+        self.hbWidth = 0
+        self.hbHeight = 0
+        self.hbPosX = 0
+        self.hbPosY = 0
 
     def update(self):
         #self.ChangePos()
@@ -82,7 +103,7 @@ class Boy:
             self.image3.clip_draw(self.frame*100,0,100,133,self.x, 90)
         elif self.State == STATE_SKILL1:
             #print("state attack")
-            self.image.clip_draw(self.frame*180,0,180,113,self.x, 90)
+            self.image.clip_draw(self.frame*280,0,280,105,self.x, 90)
         elif self.State == STATE_SKILL2:
             self.image2.clip_draw(self.frame*300,0,300,204,self.x, 120)
         elif self.State == STATE_SKILL3:
@@ -96,6 +117,16 @@ class Boy:
             self.y = 120
         elif self.State == STATE_SKILL3:
             self.y = 120
+    #바운딩 박스 구하기
+    def get_bb(self):
+        return self.x - self.width/2, self.y - self.height/2, self.x+self.width/2,self.y +self.height/2
+    #히트 박스 구하기
+    def get_hb(self):
+        return (self.x +self.hbPosX)- self.hbWidth/2, (self.y +self.hbPosY) - self.hbHeight/2, (self.x +self.hbPosX)+self.hbWidth/2,(self.y +self.hbPosY) +self.hbHeight/2
+    def draw_bb(self):
+        draw_rectangle(*self.get_bb())
+    def draw_hb(self):
+        draw_rectangle(*self.get_hb())
 
 #캐릭터에 관한 모든 키입력을 처리하는 클래스
 class InputSystem:
@@ -107,6 +138,7 @@ class InputSystem:
         self.InTime = False
         self.KeyBuffer = list()
         self.InitSkill()
+        self.SkillTime = time.time()-10
 
     #원래는 클래스 생성자에서 하면됩니다만 생성자를 여러개 만들기 귀찮아서 그냥 이렇게 썼습니다 죄송합니다
     def InitSkill(self):
@@ -150,32 +182,52 @@ class InputSystem:
             for i in range(SKILL_MAXNUM):
                 if(skill[i].size == skill[i].skillNum):
                     print("all correct")
+                    self.SkillTime = time.time()
+                    #print(self.SkillTime)
                     boy.frame = 0
                     boy.State = skill[i].name
+
             self.ClearBuffer()
+
+    def SetHitbox(self):
+        if self.SkillTime + 0.2 <= time.time() and self.SkillTime +0.5 >= time.time():
+            boy.hbPosX = 100
+            boy.hbPosY= 0
+            boy.hbHeight = 100
+            boy.hbWidth = 100
+        else:
+            boy.hbPosX = 2000
+            boy.hbPosY = 2000
+            boy.hbHeight = 1000
+            boy.hbWidth = 1000
+
 #버퍼 초기화
     def ClearBuffer(self):
         for i in range(SKILL_MAXNUM):
             skill[i].skillNum = 0
         self.KeyBuffer.clear()
+        #self.SkillTime = 0
 
 
 
 def enter():
-    global  boy, grass,skill,InputSys
+    global  boy, grass,skill,InputSys,monster
     skill = [Skill() for i in range(SKILL_MAXNUM)]
     boy = Boy()
     grass = Grass()
     InputSys = InputSystem()
+    monster = Monster()
+
 
 
 def exit():
-    global boy, grass,skill,InputSys
+    global boy, grass,skill,InputSys,monster
     del(boy)
     del(grass)
     for i in skill:
         del(i)
     del(InputSys)
+    del(monster)
 
 
 def pause():
@@ -253,15 +305,16 @@ def update():
     InputSys.CheckTime()
     if InputSys.InTime == False:
         InputSys.CheckSkill()
+    InputSys.SetHitbox()
+    monster.update()
 
 def draw():
     clear_canvas()
     grass.draw()
     boy.draw()
+    boy.draw_bb()
+    boy.draw_hb()
+    monster.draw()
     update_canvas()
     delay(0.05)
-
-
-
-
 

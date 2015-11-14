@@ -1,0 +1,24 @@
+{
+    "MoveRight" : {"frames":8, "key":RIGHT,"size":1},
+	"Attack"    : {"frames":10, "key":RIGHT,RIGHT,X, "size":3},
+	"Skill1"   : {"frames": 8, "key":RIGHT,DOWN,RIGHT "size":3},
+	"Skill2"    : {"frames":16, "key":DOWN,RIGHT,Z, "size":3}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
