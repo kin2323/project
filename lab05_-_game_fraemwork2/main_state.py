@@ -4,6 +4,7 @@ import os
 import random
 import queue
 import time
+import math
 from pico2d import *
 
 import game_framework
@@ -16,6 +17,7 @@ name = "MainState"
 SKILL_MAXNUM = 4
 RIGHT,LEFT,UP,DOWN,Z,X = range(6)
 STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3 = range(SKILL_MAXNUM+1)
+MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK = range(3)
 InputKey = False
 
 boy = None
@@ -47,13 +49,57 @@ class Grass:
 #몬스터
 class Monster:
     def __init__(self):
+        global boy
         self.image = load_image('mon_walk.png')
+        self.image1 = load_image('mon_attack.png')
         self.frame = 0
+        self.state = MON_STATE_IDLE
         self.x = 100
+        self.dir = 0
+        self.time = 0
     def draw(self):
-        self.image.clip_draw(self.frame*114,0,114,122,self.x, 90)
+        if self.state == MON_STATE_IDLE:
+            self.image.clip_draw(self.frame*115,0,115,122,self.x, 90)
+        elif self.state == MON_STATE_MOVE:
+            self.image.clip_draw(self.frame*115,0,115,122,self.x, 90)
+        elif self.state == MON_STATE_ATTACK:
+            self.image1.clip_draw(self.frame*115,0,115,122,self.x, 90)
     def update(self):
-        self.frame = (self.frame+1)%6
+        self.ChangeState()
+        self.time = (self.time+1)%5
+        if self.state == MON_STATE_IDLE:
+            print("IDLE")
+            if self.time == 0:
+                self.dir = random.randint(-1,1)
+            self.frame = (self.frame+1)%6
+            self.x = min(750,self.x+3*self.dir)
+            self.x = max(0,self.x+3*self.dir)
+        elif self.state == MON_STATE_MOVE:
+            print("MOVE")
+            self.frame = (self.frame+1)%6
+            self.x = min(750,self.x+3*self.dir)
+            self.x = max(0,self.x+3*self.dir)
+        elif self.state == MON_STATE_ATTACK:
+            print("ATTACK")
+            self.frame = (self.frame+1)%4
+    def ChangeState(self):
+        if self.state == MON_STATE_IDLE:
+            if math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 15:
+                self.state = MON_STATE_IDLE
+            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 10:
+                self.state = MON_STATE_MOVE
+                if self.x < boy.x :
+                    self.dir = -1
+                elif self.x > boy.x:
+                    self.dir = 1
+                elif self.x == boy.x:
+                    self.dir = 0
+            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 5:
+                self.state = MON_STATE_ATTACK
+        #elif self.state == MON_STATE_MOVE:
+            #self.dir = 1
+
+        #print(self.dir)
 #플레이어
 class Boy:
     def __init__(self):
@@ -79,7 +125,7 @@ class Boy:
         if self.State == STATE_IDLE:
             self.frame = 0
         elif self.State == STATE_MOVE:
-            self.x += 5
+            self.x += 7
             self.frame = (self.frame+1)%8
         elif self.State == STATE_SKILL1:
             self.frame = (self.frame+1)%10
@@ -316,5 +362,5 @@ def draw():
     boy.draw_hb()
     monster.draw()
     update_canvas()
-    delay(0.05)
+    delay(0.07)
 
