@@ -14,9 +14,9 @@ import title_state
 
 name = "MainState"
 
-SKILL_MAXNUM = 4
+SKILL_MAXNUM = 5
 RIGHT,LEFT,UP,DOWN,Z,X = range(6)
-STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3 = range(SKILL_MAXNUM+1)
+STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3 = range(SKILL_MAXNUM)
 MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK = range(3)
 InputKey = False
 
@@ -110,7 +110,13 @@ class Boy:
         self.image1 = load_image('skill3_right.png')
         self.image2 = load_image('skill1_right.png')
         self.image3 = load_image('walk_right.png')
-        #self.dir = 1
+
+        self.image4 = load_image('skill2_left.png')
+        self.image5 = load_image('skill3_left.png')
+        self.image6 = load_image('skill1_left.png')
+        self.image7 = load_image('walk_left.png')
+
+        self.dir = 1
         self.KeyNum = 0
         self.State = STATE_IDLE
         self.accel = random.randint(3,7)
@@ -126,7 +132,8 @@ class Boy:
         if self.State == STATE_IDLE:
             self.frame = 0
         elif self.State == STATE_MOVE:
-            self.x += 10
+            self.x = min(750,self.x+8*self.dir)
+            self.x = max(0,self.x+8*self.dir)
             self.frame = (self.frame+1)%8
         elif self.State == STATE_SKILL1:
             self.frame = (self.frame+1)%10
@@ -143,18 +150,32 @@ class Boy:
     def draw(self):
         if self.State == STATE_IDLE:
             #dir == right/left일때로 이미지 드로우 변경
-            #self.image1.clip_draw(self.frame*320,0,320,218,self.x, self.y)
-            self.image3.clip_draw(100,0,100,133,self.x, 90)
+            if self.dir == 1:
+                self.image3.clip_draw(100,0,100,133,self.x, 90)
+            elif self.dir == -1:
+                self.image7.clip_draw(100,0,100,133,self.x, 90)
         elif self.State == STATE_MOVE:
             #self.image1.clip_draw(self.frame*320,0,320,218,self.x, self.y)
-            self.image3.clip_draw(self.frame*100,0,100,133,self.x, 90)
+            if self.dir == 1:
+                self.image3.clip_draw(self.frame*100,0,100,133,self.x, 90)
+            elif self.dir == -1:
+                self.image7.clip_draw(self.frame*100,0,100,133,self.x, 90)
         elif self.State == STATE_SKILL1:
             #print("state attack")
-            self.image.clip_draw(self.frame*280,0,280,105,self.x, 90)
+            if self.dir == 1:
+                self.image.clip_draw(self.frame*280,0,280,105,self.x, 90)
+            elif self.dir == -1:
+                self.image4.clip_draw(self.frame*280,0,280,105,self.x, 90)
         elif self.State == STATE_SKILL2:
-            self.image2.clip_draw(self.frame*300,0,300,204,self.x, 120)
+            if self.dir == 1:
+                self.image2.clip_draw(self.frame*300,0,300,204,self.x, 120)
+            elif self.dir == -1:
+                self.image6.clip_draw(self.frame*300,0,300,204,self.x, 120)
         elif self.State == STATE_SKILL3:
-            self.image1.clip_draw(self.frame*320,0,320,218,self.x, 120)
+            if self.dir == 1:
+                self.image1.clip_draw(self.frame*320,0,320,218,self.x, 120)
+            elif self.dir == -1:
+                self.image5.clip_draw(self.frame*320,0,320,218,self.x, 120)
     def ChangePos(self):
         if self.State == STATE_IDLE:
             self.y = 90
@@ -191,20 +212,27 @@ class InputSystem:
     def InitSkill(self):
         for i in range(SKILL_MAXNUM):
             #skillname = state_skill 즉 스테이트가 된다
-            skill[i].name = i+1
             skill[i].skillNum = 0
         skill[0].frames = 8
         skill[0].key = [RIGHT]
         skill[0].size = 1
-        skill[1].frames = 10
-        skill[1].key = [RIGHT, RIGHT, X]
-        skill[1].size = 3
-        skill[2].frames = 8
-        skill[2].key = [RIGHT, DOWN, RIGHT]
+        skill[0].name = STATE_MOVE
+        skill[1].frames = 8
+        skill[1].key = [LEFT]
+        skill[1].size = 1
+        skill[1].name = STATE_MOVE
+        skill[2].frames = 10
+        skill[2].key = [RIGHT, RIGHT, X]
         skill[2].size = 3
-        skill[3].frames = 16
-        skill[3].key = [DOWN, RIGHT,Z]
+        skill[2].name = STATE_SKILL1
+        skill[3].frames = 8
+        skill[3].key = [RIGHT, DOWN, RIGHT]
         skill[3].size = 3
+        skill[3].name = STATE_SKILL2
+        skill[4].frames = 16
+        skill[4].key = [DOWN, RIGHT,Z]
+        skill[4].size = 3
+        skill[4].name = STATE_SKILL3
 
 #키 버퍼에 들어가는 시간 체크
     def CheckTime(self):
@@ -233,6 +261,10 @@ class InputSystem:
                     #print(self.SkillTime)
                     boy.frame = 0
                     boy.State = skill[i].name
+                    if i == 0:
+                        boy.dir = 1
+                    elif i == 1:
+                        boy.dir = -1
 
             self.ClearBuffer()
 
