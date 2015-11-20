@@ -83,19 +83,20 @@ class Monster:
             print("ATTACK")
             self.frame = (self.frame+1)%4
     def ChangeState(self):
-        if self.state == MON_STATE_IDLE:
-            if math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 15:
-                self.state = MON_STATE_IDLE
-            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 10:
-                self.state = MON_STATE_MOVE
-                if self.x < boy.x :
-                    self.dir = -1
-                elif self.x > boy.x:
-                    self.dir = 1
-                elif self.x == boy.x:
-                    self.dir = 0
-            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 5:
-                self.state = MON_STATE_ATTACK
+        #print(math.sqrt((boy.x - self.x)*(boy.x - self.x)))
+        if math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 50:
+            self.state = MON_STATE_ATTACK
+        elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 200:
+            self.state = MON_STATE_MOVE
+            if self.x < boy.x :
+                self.dir = 1
+            elif self.x > boy.x:
+                self.dir = -1
+            elif self.x == boy.x:
+                self.dir = 0
+        elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 300:
+            self.state = MON_STATE_IDLE
+
         #elif self.state == MON_STATE_MOVE:
             #self.dir = 1
 
@@ -125,7 +126,7 @@ class Boy:
         if self.State == STATE_IDLE:
             self.frame = 0
         elif self.State == STATE_MOVE:
-            self.x += 7
+            self.x += 10
             self.frame = (self.frame+1)%8
         elif self.State == STATE_SKILL1:
             self.frame = (self.frame+1)%10
