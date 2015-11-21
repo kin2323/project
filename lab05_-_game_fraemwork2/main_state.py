@@ -55,27 +55,26 @@ class Monster:
 
         self.image2 = load_image('mon1_walk_left.png')
         self.image3 = load_image('mon1_attack_left.png')
+
         self.frame = 0
         self.state = MON_STATE_IDLE
         self.x = 100
+        self.y = 90
         self.dir = 0
         self.time = 0
+        self.width = 124
+        self.height = 108
     def draw(self):
-        if self.state == MON_STATE_IDLE:
+        if self.state == MON_STATE_IDLE or self.state == MON_STATE_MOVE :
             if self.dir == 1:
-                self.image.clip_draw(self.frame*123,0,123,108,self.x, 90)
-            elif self.dir == -1:
-                self.image2.clip_draw(self.frame*123,0,123,108,self.x, 90)
-        elif self.state == MON_STATE_MOVE:
-            if self.dir == 1:
-                self.image.clip_draw(self.frame*123,0,123,108,self.x, 90)
-            elif self.dir == -1:
-                self.image2.clip_draw(self.frame*123,0,123,108,self.x, 90)
+                self.image.clip_draw(self.frame*124,0,124,108,self.x, 90)
+            else:
+                self.image2.clip_draw(self.frame*124,0,124,108,self.x, 90)
         elif self.state == MON_STATE_ATTACK:
             if self.dir == 1:
-                self.image1.clip_draw(self.frame*123,0,123,108,self.x, 90)
-            elif self.dir == -1:
-                self.image3 .clip_draw(self.frame*115,0,115,122,self.x, 90)
+                self.image1.clip_draw(self.frame*124,0,124,108,self.x, 90)
+            else :
+                self.image3 .clip_draw(self.frame*124,0,124,108,self.x, 90)
     def update(self):
         self.ChangeState()
         self.time = (self.time+1)%5
@@ -113,6 +112,10 @@ class Monster:
             #self.dir = 1
 
         #print(self.dir)
+    def get_bb(self):
+        return self.x - self.width/3, self.y - self.height/3, self.x+self.width/3,self.y +self.height/3
+    def draw_bb(self):
+        draw_rectangle(*self.get_bb())
 #플레이어
 class Boy:
     def __init__(self):
@@ -127,6 +130,10 @@ class Boy:
         self.image5 = load_image('skill3_left.png')
         self.image6 = load_image('skill1_left.png')
         self.image7 = load_image('walk_left.png')
+
+        self.image8 = load_image('effect.png')
+        self.image9 = load_image('effect1.jpg')
+        self.image10 = load_image('effect2.jpg')
 
         self.dir = 1
         self.KeyNum = 0
@@ -178,16 +185,19 @@ class Boy:
                 self.image.clip_draw(self.frame*280,0,280,105,self.x, 90)
             elif self.dir == -1:
                 self.image4.clip_draw(self.frame*280,0,280,105,self.x, 90)
+            self.image10.clip_draw(self.frame*140,0,140,80,self.x, 80)
         elif self.State == STATE_SKILL2:
             if self.dir == 1:
                 self.image2.clip_draw(self.frame*300,0,300,204,self.x, 120)
             elif self.dir == -1:
                 self.image6.clip_draw(self.frame*300,0,300,204,self.x, 120)
+            self.image8.clip_draw(self.frame*118,0,118,146,self.x-15, 90)
         elif self.State == STATE_SKILL3:
             if self.dir == 1:
                 self.image1.clip_draw(self.frame*320,0,320,218,self.x, 120)
             elif self.dir == -1:
                 self.image5.clip_draw(self.frame*320,0,320,218,self.x, 120)
+            self.image9.clip_draw(self.frame*128,0,128,128,self.x, 80)
     def ChangePos(self):
         if self.State == STATE_IDLE:
             self.y = 90
@@ -207,7 +217,6 @@ class Boy:
         draw_rectangle(*self.get_bb())
     def draw_hb(self):
         draw_rectangle(*self.get_hb())
-
 #캐릭터에 관한 모든 키입력을 처리하는 클래스
 class InputSystem:
     def __init__(self):
@@ -406,6 +415,7 @@ def draw():
     boy.draw_bb()
     boy.draw_hb()
     monster.draw()
+    monster.draw_bb()
     update_canvas()
     delay(0.07)
 
