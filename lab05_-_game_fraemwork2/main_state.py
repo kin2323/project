@@ -50,8 +50,11 @@ class Grass:
 class Monster:
     def __init__(self):
         global boy
-        self.image = load_image('mon_walk.png')
-        self.image1 = load_image('mon_attack.png')
+        self.image = load_image('mon1_walk_right.png')
+        self.image1 = load_image('mon1_attack_right.png')
+
+        self.image2 = load_image('mon1_walk_left.png')
+        self.image3 = load_image('mon1_attack_left.png')
         self.frame = 0
         self.state = MON_STATE_IDLE
         self.x = 100
@@ -59,11 +62,20 @@ class Monster:
         self.time = 0
     def draw(self):
         if self.state == MON_STATE_IDLE:
-            self.image.clip_draw(self.frame*115,0,115,122,self.x, 90)
+            if self.dir == 1:
+                self.image.clip_draw(self.frame*123,0,123,108,self.x, 90)
+            elif self.dir == -1:
+                self.image2.clip_draw(self.frame*123,0,123,108,self.x, 90)
         elif self.state == MON_STATE_MOVE:
-            self.image.clip_draw(self.frame*115,0,115,122,self.x, 90)
+            if self.dir == 1:
+                self.image.clip_draw(self.frame*123,0,123,108,self.x, 90)
+            elif self.dir == -1:
+                self.image2.clip_draw(self.frame*123,0,123,108,self.x, 90)
         elif self.state == MON_STATE_ATTACK:
-            self.image1.clip_draw(self.frame*115,0,115,122,self.x, 90)
+            if self.dir == 1:
+                self.image1.clip_draw(self.frame*123,0,123,108,self.x, 90)
+            elif self.dir == -1:
+                self.image3 .clip_draw(self.frame*115,0,115,122,self.x, 90)
     def update(self):
         self.ChangeState()
         self.time = (self.time+1)%5
