@@ -35,10 +35,13 @@ class Skill:
         self.frames = None
         self.key = None
         self.size = 0
-        self.height = 0;
-        self.width = 0;
-        def get_bb(self,x,y):
-            return x - self.width/2, y - self.height/2,x+self.width/2,y+self.height/2
+        self.height = 0
+        self.width = 0
+        self.time = -1
+        self.tick = -1
+        self.hitCount = 1
+        #def get_bb(self,x,y):
+            #return x - self.width/2, y - self.height/2,x+self.width/2,y+self.height/2
 
 #맵
 class Grass:
@@ -79,19 +82,19 @@ class Monster:
         self.ChangeState()
         self.time = (self.time+1)%5
         if self.state == MON_STATE_IDLE:
-            print("IDLE")
+            #print("IDLE")
             if self.time == 0:
                 self.dir = random.randint(-1,1)
             self.frame = (self.frame+1)%6
             self.x = min(750,self.x+3*self.dir)
             self.x = max(0,self.x+3*self.dir)
         elif self.state == MON_STATE_MOVE:
-            print("MOVE")
+            #print("MOVE")
             self.frame = (self.frame+1)%6
             self.x = min(750,self.x+3*self.dir)
             self.x = max(0,self.x+3*self.dir)
         elif self.state == MON_STATE_ATTACK:
-            print("ATTACK")
+            #print("ATTACK")
             self.frame = (self.frame+1)%4
     def ChangeState(self):
         #print(math.sqrt((boy.x - self.x)*(boy.x - self.x)))
@@ -228,6 +231,7 @@ class InputSystem:
         self.KeyBuffer = list()
         self.InitSkill()
         self.SkillTime = time.time()-10
+        self.skillNumber = -1
 
     #원래는 클래스 생성자에서 하면됩니다만 생성자를 여러개 만들기 귀찮아서 그냥 이렇게 썼습니다 죄송합니다
     def InitSkill(self):
@@ -243,17 +247,22 @@ class InputSystem:
         skill[1].size = 1
         skill[1].name = STATE_MOVE
         skill[2].frames = 10
-        skill[2].key = [RIGHT, RIGHT, X]
+        skill[2].key = [UP, UP, X]
         skill[2].size = 3
+        skill[2].time = 0.2
+        skill[2].tick = 0.1
         skill[2].name = STATE_SKILL1
         skill[3].frames = 8
-        skill[3].key = [RIGHT, DOWN, RIGHT]
-        skill[3].size = 3
+        skill[3].key = [DOWN,Z]
+        skill[3].size = 2
+        skill[3].time = 0.1
+        skill[3].tick = 0.1
         skill[3].name = STATE_SKILL2
         skill[4].frames = 16
-        skill[4].key = [DOWN, RIGHT,Z]
+        skill[4].key = [DOWN, UP,Z]
         skill[4].size = 3
         skill[4].name = STATE_SKILL3
+        skill[4].hitCount = 2
 
 #키 버퍼에 들어가는 시간 체크
     def CheckTime(self):
@@ -270,15 +279,16 @@ class InputSystem:
                 for j in range(len(self.KeyBuffer)):
                     if len(self.KeyBuffer) == skill[i].size:
                         if next(self.it) == skill[i].key[j]:
-                            print("correct")
+                            #print("correct")
                             #print(skill[i].key[j])
                             skill[i].skillNum += 1
                             #print(skill[i].skillNum)
                 self.it = iter(self.KeyBuffer)
             for i in range(SKILL_MAXNUM):
                 if(skill[i].size == skill[i].skillNum):
-                    print("all correct")
+                    #print("all correct")
                     self.SkillTime = time.time()
+                    self.skillNumber = i
                     #print(self.SkillTime)
                     boy.frame = 0
                     boy.State = skill[i].name
@@ -290,16 +300,17 @@ class InputSystem:
             self.ClearBuffer()
 
     def SetHitbox(self):
-        if self.SkillTime + 0.2 <= time.time() and self.SkillTime +0.5 >= time.time():
-            boy.hbPosX = 100
-            boy.hbPosY= 0
-            boy.hbHeight = 100
-            boy.hbWidth = 100
-        else:
-            boy.hbPosX = 2000
-            boy.hbPosY = 2000
-            boy.hbHeight = 1000
-            boy.hbWidth = 1000
+        for i in range(skill[self.skillNumber].hitCount):
+            if self.SkillTime + skill[self.skillNumber].time <= time.time() and self.SkillTime +skill[self.skillNumber].time+skill[self.skillNumber].tick >= time.time():
+                boy.hbPosX = 100*boy.dir
+                boy.hbPosY= 0*boy.dir
+                boy.hbHeight = 100*boy.dir
+                boy.hbWidth = 100*boy.dir
+            else:
+                boy.hbPosX = 2000
+                boy.hbPosY = 2000
+                boy.hbHeight = 1000
+                boy.hbWidth = 1000
 
 #버퍼 초기화
     def ClearBuffer(self):
@@ -347,42 +358,42 @@ def handle_events():
         if event.type == SDL_QUIT:
              game_framework.change_state(title_state)
         elif event.type == SDL_KEYDOWN:
-            print("down")
+            #print("down")
             InputSys.InputTime = time.time()
             if event.key == SDLK_ESCAPE:
                 running = False
             elif event.key == SDLK_RIGHT:
                 InputSys.key = RIGHT
                 if InputSys.InputTime:
-                    print("right")
+                    #print("right")
                     InputSys.KeyBuffer.append(RIGHT)
             elif event.key == SDLK_LEFT:
                 InputSys.key = LEFT
                 if InputSys.InputTime:
-                    print("left")
+                    #print("left")
                     InputSys.KeyBuffer.append(LEFT)
             elif event.key == SDLK_UP:
                 InputSys.key = UP
                 if InputSys.InputTime:
-                    print("up")
+                    #print("up")
                     InputSys.KeyBuffer.append(UP)
             elif event.key == SDLK_DOWN:
                 InputSys.key = DOWN
                 if InputSys.InputTime:
-                    print("down")
+                    #print("down")
                     InputSys.KeyBuffer.append(DOWN)
             elif event.key == SDLK_z:
                 InputSys.key = Z
                 if InputSys.InputTime:
-                    print("z")
+                    #print("z")
                     InputSys.KeyBuffer.append(Z)
             elif event.key == SDLK_x:
                 InputSys.key = X
                 if InputSys.InputTime:
-                    print("x")
+                    #print("x")
                     InputSys.KeyBuffer.append(X)
         elif event.type == SDL_KEYUP:
-            print("up")
+            #print("up")
             if event.key == SDLK_RIGHT:
                 if boy.State == STATE_MOVE:
                     boy.State = STATE_IDLE
