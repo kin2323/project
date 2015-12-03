@@ -78,20 +78,22 @@ class Grass:
         self.image.draw(400,300)
 #몬스터
 class Monster:
+    image = None
     def __init__(self):
         global InputSys
-        self.image = load_image('mon1_walk_right.png')
-        self.image1 = load_image('mon1_attack_right.png')
-
-        self.image2 = load_image('mon1_walk_left.png')
-        self.image3 = load_image('mon1_attack_left.png')
-
-        self.image4 = load_image('mon1_getHit_right.png')
-        self.image5 = load_image('mon1_getHit_left.png')
+        if self.image == None:
+            self.image = [
+                load_image('mon1_walk_right.png'),
+                load_image('mon1_attack_right.png'),
+                load_image('mon1_walk_left.png'),
+                load_image('mon1_attack_left.png'),
+                load_image('mon1_getHit_right.png'),
+                load_image('mon1_getHit_left.png')
+            ]
 
         self.frame = 0
         self.state = MON_STATE_IDLE
-        self.x = 100
+        self.x = random.randint(100,700)
         self.y = 90
         self.dir = 0
         self.time = 0
@@ -116,19 +118,19 @@ class Monster:
     def draw(self):
         if self.state == MON_STATE_IDLE or self.state == MON_STATE_MOVE :
             if self.dir == 1:
-                self.image.clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[0].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else:
-                self.image2.clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[2].clip_draw(self.frame*124,0,124,108,self.x, self.y)
         elif self.state == MON_STATE_ATTACK:
             if self.dir == 1:
-                self.image1.clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[1].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else :
-                self.image3 .clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[3] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
         elif self.state == MON_STATE_ATTACKED:
             if self.dir == 1:
-                self.image4.clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[4].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else :
-                self.image5 .clip_draw(self.frame*124,0,124,108,self.x, self.y)
+                self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
     def update(self):
         self.ChangeState()
         self.set_hb()
@@ -207,7 +209,7 @@ class Monster:
         self.frame = 0
         #self.monBgm.play()
         self.skillNum = InputSys.skillNumber
-        print(self.skillNum)
+        #print(self.skillNum)
         #print("attacked111")
 
     def get_bb(self):
@@ -361,8 +363,8 @@ class Boy:
         self.State = STATE_ATTACKED
         if self.hp > 0:
             self.hp -= 100
-        else:
-            game_framework.change_state(title_state)
+        #else:
+            #game_framework.change_state(title_state)
     #바운딩 박스 구하기
     def get_bb(self):
         return self.x - self.width/2, self.y - self.height/2, self.x+self.width/2,self.y +self.height/2
@@ -503,7 +505,7 @@ def enter():
     boy = Boy()
     grass = Grass()
     InputSys = InputSystem()
-    monster = Monster()
+    monster = [Monster() for i in range(10)]
 
 
 
@@ -514,7 +516,8 @@ def exit():
     for i in skill:
         del(i)
     del(InputSys)
-    del(monster)
+    for i in monster:
+        del(i)
 
 
 def pause():
@@ -592,13 +595,14 @@ def update():
     if InputSys.InTime == False:
         InputSys.CheckSkill()
     InputSys.SetHitbox()
-    monster.update()
+    for i in monster:
+        i.update()
     boy.update()
-    if collision(monster,boy):
-        boy.getHit()
-    if collision(boy,monster):
-        monster.getHit()
-        print("coll222")
+    for i in monster:
+        if collision(i,boy):
+            boy.getHit()
+        if collision(boy,i):
+            i.getHit()
 
 def draw():
     clear_canvas()
@@ -606,7 +610,8 @@ def draw():
     boy.draw()
     #boy.draw_bb()
     #boy.draw_hb()
-    monster.draw()
+    for i in monster:
+        i.draw()
     #monster.draw_bb()
     #monster.draw_hb()
     update_canvas()
