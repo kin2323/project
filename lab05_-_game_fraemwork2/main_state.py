@@ -9,6 +9,7 @@ from pico2d import *
 
 import game_framework
 import title_state
+from ui import UI
 
 
 
@@ -26,6 +27,7 @@ skill = None
 grass = None
 InputSys = None
 monster = None
+ui = None
 
 def collision(a,b):
     left_a, bottom_a, right_a, top_a = a.get_hb()
@@ -132,6 +134,10 @@ class Monster:
                 self.image[4].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else :
                 self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
+
+    def damageDraw(self):
+        pass
+        #ui.draw(400,500,50)
     def update(self):
         self.ChangeState()
         self.set_hb()
@@ -505,11 +511,12 @@ class InputSystem:
 
 
 def enter():
-    global  boy, grass,skill,InputSys,monster
+    global  boy, grass,skill,InputSys,monster, ui
     skill = [Skill() for i in range(SKILL_MAXNUM)]
     boy = Boy()
     grass = Grass()
     InputSys = InputSystem()
+    ui = UI()
     monster = [Monster() for i in range(MON_MAXNUM)]
 
 
@@ -523,6 +530,7 @@ def exit():
     del(InputSys)
     for i in monster:
         del(i)
+    del(ui)
 
 
 def pause():
