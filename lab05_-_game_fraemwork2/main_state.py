@@ -14,8 +14,9 @@ import title_state
 
 name = "MainState"
 
-SKILL_MAXNUM = 5
-RIGHT,LEFT,UP,DOWN,Z,X = range(6)
+SKILL_MAXNUM = 6
+MON_MAXNUM = 3
+RIGHT,LEFT,UP,DOWN,Z,X,EMPTY = range(7)
 STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED = range(6)
 MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED = range(4)
 InputKey = False
@@ -427,6 +428,10 @@ class InputSystem:
         skill[4].tick[0] = 0.2
         skill[4].time[1] = 0.8
         skill[4].tick[1] = 0.2
+        skill[5].frames = 0
+        skill[5].key = [EMPTY]
+        skill[5].size = 1
+        skill[5].name = STATE_IDLE
 
 #키 버퍼에 들어가는 시간 체크
     def CheckTime(self):
@@ -436,7 +441,6 @@ class InputSystem:
             self.InTime = True
 #키 버퍼에 들어간 키를 커맨드 키와 대조, 만약 같다면 스테이트를 바꿔줍니다
     def CheckSkill(self):
-        #self.size = self.KeyBuffer.qsize()
         if len(self.KeyBuffer) != 0:
             self.it = iter(self.KeyBuffer)
             for i in range(SKILL_MAXNUM):
@@ -453,8 +457,9 @@ class InputSystem:
                     #print("all correct")
                     #print(self.SkillTime)
                     boy.frame = 0
-                    if boy.State == STATE_IDLE:
+                    if boy.State == STATE_IDLE or boy.State == STATE_MOVE:
                         boy.State = skill[i].name
+                        #print("state change")
                         self.SkillTime = time.time()
                         self.skillNumber = i
                     if i == 0:
@@ -505,7 +510,7 @@ def enter():
     boy = Boy()
     grass = Grass()
     InputSys = InputSystem()
-    monster = [Monster() for i in range(10)]
+    monster = [Monster() for i in range(MON_MAXNUM)]
 
 
 
@@ -534,9 +539,8 @@ def handle_events():
     global boy
     events = get_events()
     for event in events:
-        if event.type == SDL_QUIT:
-             game_framework.change_state(title_state)
-        elif event.type == SDL_KEYDOWN:
+        if event.type == SDL_KEYDOWN:
+            #print("down")
             #print("down")
             InputSys.InputTime = time.time()
             if event.key == SDLK_ESCAPE:
@@ -572,19 +576,12 @@ def handle_events():
                     #print("x")
                     InputSys.KeyBuffer.append(X)
         elif event.type == SDL_KEYUP:
-            #print("up")
             if event.key == SDLK_RIGHT:
-                if boy.State == STATE_MOVE:
-                    boy.State = STATE_IDLE
+                InputSys.KeyBuffer.append(EMPTY)
+                #print("up")
             elif event.key == SDLK_LEFT:
-                if boy.State == STATE_MOVE:
-                    boy.State = STATE_IDLE
-            """elif event.key == SDLK_UP:
-                if InputSys.CheckTime():
-                    print(InputSys.key)
-            elif event.key == SDLK_DOWN:
-                if InputSys.CheckTime():
-                    print(InputSys.key)"""
+                InputSys.KeyBuffer.append(EMPTY)
+                #print("up")
 
 
 
