@@ -12,7 +12,7 @@ class UI:
         self.time = get_time()
     def draw(self,x,y,damage):
         #print("시간 %d :, 점수 : %d" % (self.score,self.time))
-        self.font.draw(x,y," %d" % (damage))
+        self.font.draw(x, y," %d" % (damage))
 
 def test_ui():
     open_canvas()

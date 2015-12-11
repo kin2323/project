@@ -102,6 +102,7 @@ class Monster:
         self.time = 0
         self.width = 124
         self.height = 108
+        self.damage = 0
 
         self.attackTime = -1
         self.hbWidth = 0
@@ -115,7 +116,7 @@ class Monster:
         self.skillNum = 0
 
         self.monBgm = load_music('get_hit.wav')
-        self.monBgm.set_volume(64)
+        self.monBgm.set_volume(32)
 
 
     def draw(self):
@@ -136,8 +137,7 @@ class Monster:
                 self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
 
     def damageDraw(self):
-        pass
-        #ui.draw(400,500,50)
+        ui.draw(self.x ,self.y + 30, self.damage)
     def update(self):
         self.ChangeState()
         self.set_hb()
@@ -214,7 +214,7 @@ class Monster:
     def getHit(self):
         self.state = MON_STATE_ATTACKED
         self.frame = 0
-        #self.monBgm.play()
+        self.monBgm.play()
         self.skillNum = InputSys.skillNumber
         #print(self.skillNum)
         #print("attacked111")
