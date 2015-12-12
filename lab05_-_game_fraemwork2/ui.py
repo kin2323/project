@@ -5,14 +5,17 @@ class UI:
         self.font = load_font('font5.ttf',30)
         self.score = 0
         self.time = 0
+        self.x, self.y = 0,0
     """def update(self,frame_time):
         self.time += frame_time"""
 
     def update(self):
         self.time = get_time()
+        self.y += 5
     def draw(self,x,y,damage):
-        #print("시간 %d :, 점수 : %d" % (self.score,self.time))
-        self.font.draw(x, y," %d" % (damage))
+        self.x = x
+        self.y = y
+        self.font.draw(self.x, self.y," %d" % (damage))
 
 def test_ui():
     open_canvas()

@@ -16,7 +16,7 @@ from ui import UI
 name = "MainState"
 
 SKILL_MAXNUM = 6
-MON_MAXNUM = 3
+MON_MAXNUM = 1
 RIGHT,LEFT,UP,DOWN,Z,X,EMPTY = range(7)
 STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED = range(6)
 MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED = range(4)
@@ -75,7 +75,7 @@ class Grass:
         self.image = load_image('map.png')
         self.bgm = load_music('bgm.mp3')
         self.bgm.set_volume(64)
-        self.bgm.repeat_play()
+        #self.bgm.repeat_play()
 
     def draw(self):
         self.image.draw(400,300)
@@ -131,13 +131,16 @@ class Monster:
             else :
                 self.image[3] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
         elif self.state == MON_STATE_ATTACKED:
+            self.damageDraw()
             if self.dir == 1:
                 self.image[4].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else :
                 self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
 
     def damageDraw(self):
-        ui.draw(self.x ,self.y + 30, self.damage)
+        ui.draw(self.x ,self.y + 100, self.damage)
+        ui.update()
+        print("damage")
     def update(self):
         self.ChangeState()
         self.set_hb()
@@ -163,7 +166,7 @@ class Monster:
             #self.gravity -= 20
         elif self.state == MON_STATE_ATTACKED:
             #print("attacked22")
-            print(InputSys.skillNumber)
+            #print(InputSys.skillNumber)
             if self.skillNum ==  STATE_SKILL1 or self.skillNum ==  STATE_SKILL3 :
                 self.x -= 3*self.dir
                 if self.y > 90:
@@ -217,7 +220,7 @@ class Monster:
         self.monBgm.play()
         self.skillNum = InputSys.skillNumber
         #print(self.skillNum)
-        #print("attacked111")
+        self.damage = random.randint(0,10);
 
     def get_bb(self):
         return self.x - self.width/3, self.y - self.height/3, self.x+self.width/3,self.y +self.height/3
