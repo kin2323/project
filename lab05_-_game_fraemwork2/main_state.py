@@ -19,7 +19,7 @@ SKILL_MAXNUM = 6
 MON_MAXNUM = 1
 RIGHT,LEFT,UP,DOWN,Z,X,EMPTY = range(7)
 STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED = range(6)
-MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED = range(4)
+MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED, MON_STATE_DIE = range(5)
 InputKey = False
 
 boy = None
@@ -103,6 +103,7 @@ class Monster:
         self.width = 124
         self.height = 108
         self.damage = 0
+        self.hp = 10
 
         self.attackTime = -1
         self.hbWidth = 0
@@ -136,11 +137,15 @@ class Monster:
                 self.image[4].clip_draw(self.frame*124,0,124,108,self.x, self.y)
             else :
                 self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
+        elif self.state == MON_STATE_DIE:
+            if self.dir == 1:
+                self.image[4].clip_draw(self.frame*124,0,124,108,self.x, self.y)
+            else :
+                self.image[5] .clip_draw(self.frame*124,0,124,108,self.x, self.y)
 
     def damageDraw(self):
         ui.draw(self.x ,self.y + 100, self.damage)
         ui.update()
-        print("damage")
     def update(self):
         self.ChangeState()
         self.set_hb()
@@ -167,60 +172,86 @@ class Monster:
         elif self.state == MON_STATE_ATTACKED:
             #print("attacked22")
             #print(InputSys.skillNumber)
-            if self.skillNum ==  STATE_SKILL1 or self.skillNum ==  STATE_SKILL3 :
-                self.x -= 3*self.dir
-                if self.y > 90:
+            if self.state != MON_STATE_DIE:
+                if self.skillNum ==  STATE_SKILL1 or self.skillNum ==  STATE_SKILL3 :
+                    self.x -= 3*self.dir
+                    print("get attacked")
+                    print(self.x)
+                    if self.y > 90:
+                        self.y += (self.gravity / self.jumpHeight)
+                        self.gravity -= 20
+                        if self.gravity / self.jumpHeight >0:
+                            self.frame = 1
+                        else:
+                            if self.frame != 4 :
+                             self.frame = (self.frame+1)%5
+                    else:
+                        self.y = 90
+                        self.gravity = 200
+                        self.frame += 1
+                        self.state = MON_STATE_IDLE
+                elif self.skillNum ==  STATE_SKILL2:
                     self.y += (self.gravity / self.jumpHeight)
-                    self.gravity -= 20
-                    if self.gravity / self.jumpHeight >0:
-                        self.frame = 1
+                    if self.y > 90:
+                        self.gravity -= 20
+                        if self.gravity / self.jumpHeight >0:
+                            self.frame = 1
+                        else:
+                            if self.frame != 4 :
+                             self.frame = (self.frame+1)%5
                     else:
-                        if self.frame != 4 :
-                         self.frame = (self.frame+1)%5
+                        self.y = 90
+                        self.gravity = 200
+                        self.frame += 1
+                        self.state = MON_STATE_IDLE
+
+        elif self.state == MON_STATE_DIE:
+            self.y += (self.gravity / self.jumpHeight)
+            if self.y > 90:
+                self.gravity -= 20
+                if self.gravity / self.jumpHeight >0:
+                    self.frame = 1
                 else:
-                    self.y = 90
-                    self.gravity = 200
-                    self.frame += 1
-                    self.state = MON_STATE_IDLE
-            elif self.skillNum ==  STATE_SKILL2:
-                self.y += (self.gravity / self.jumpHeight)
-                if self.y > 90:
-                    self.gravity -= 20
-                    if self.gravity / self.jumpHeight >0:
-                        self.frame = 1
-                    else:
-                        if self.frame != 4 :
-                         self.frame = (self.frame+1)%5
-                else:
-                    self.y = 90
-                    self.gravity = 200
-                    self.frame += 1
-                    self.state = MON_STATE_IDLE
+                    if self.frame != 4 :
+                     self.frame = (self.frame+1)%5
+            else:
+                self.y = 90
+                self.frame = 5
+                del(self)
+
     def ChangeState(self):
         #print(math.sqrt((boy.x - self.x)*(boy.x - self.x)))
-        if self.state != MON_STATE_ATTACKED:
-            if math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 30:
-                if self.time == 0:
-                    self.state = MON_STATE_ATTACK
-                    #print("attack",self.time)
-            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 200:
-                self.state = MON_STATE_MOVE
-                if self.x < boy.x :
-                    self.dir = 1
-                elif self.x > boy.x:
-                    self.dir = -1
-                elif self.x == boy.x:
-                    self.dir = 0
-            elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 300:
-                self.state = MON_STATE_IDLE
+        if self.state != MON_STATE_DIE:
+            if self.state != MON_STATE_ATTACKED:
+                if math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 30:
+                    if self.time == 0:
+                        self.state = MON_STATE_ATTACK
+                        #print("attack",self.time)
+                elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 200:
+                    self.state = MON_STATE_MOVE
+                    if self.x < boy.x :
+                        self.dir = 1
+                    elif self.x > boy.x:
+                        self.dir = -1
+                    elif self.x == boy.x:
+                        self.dir = 0
+                elif math.sqrt((boy.x - self.x)*(boy.x - self.x)) <= 300:
+                    self.state = MON_STATE_IDLE
 
     def getHit(self):
-        self.state = MON_STATE_ATTACKED
-        self.frame = 0
-        self.monBgm.play()
-        self.skillNum = InputSys.skillNumber
-        #print(self.skillNum)
-        self.damage = random.randint(0,10);
+        if self.state != MON_STATE_DIE:
+            if self.hp <= 0:
+                self.state = MON_STATE_DIE
+            else:
+                self.state = MON_STATE_ATTACKED
+            self.frame = 0
+            if self.skillNum != STATE_SKILL1:
+                self.gravity = 200
+            self.monBgm.play()
+            self.skillNum = InputSys.skillNumber
+            #print(self.skillNum)
+            self.damage = random.randint(0,10);
+            self.hp -= self.damage
 
     def get_bb(self):
         return self.x - self.width/3, self.y - self.height/3, self.x+self.width/3,self.y +self.height/3
@@ -468,7 +499,6 @@ class InputSystem:
                     boy.frame = 0
                     if boy.State == STATE_IDLE or boy.State == STATE_MOVE:
                         boy.State = skill[i].name
-                        #print("state change")
                         self.SkillTime = time.time()
                         self.skillNumber = i
                     if i == 0:
@@ -489,7 +519,6 @@ class InputSystem:
                 boy.hbWidth = (skill[self.skillNumber].hbWidth*boy.dir)
             else:
                 boy.hbPosX += skill[self.skillNumber].move*boy.dir
-                print(boy.hbPosX)
         elif self.SkillTime + skill[self.skillNumber].time[1] <= time.time() and self.SkillTime +skill[self.skillNumber].time[1]+skill[self.skillNumber].tick[1] >= time.time():
             #print("true")
             boy.hbPosX = (100*boy.dir)
@@ -525,7 +554,7 @@ def enter():
 
 
 def exit():
-    global boy, grass,skill,InputSys,monster
+    global boy, grass,skill,InputSys,monster,ui
     del(boy)
     del(grass)
     for i in skill:
@@ -556,41 +585,41 @@ def handle_events():
             InputSys.InputTime = time.time()
             if event.key == SDLK_ESCAPE:
                 game_framework.change_state(title_state)
-            elif event.key == SDLK_RIGHT:
+            if event.key == SDLK_RIGHT:
                 InputSys.key = RIGHT
                 if InputSys.InputTime:
                     #print("right")
                     InputSys.KeyBuffer.append(RIGHT)
-            elif event.key == SDLK_LEFT:
+            if event.key == SDLK_LEFT:
                 InputSys.key = LEFT
                 if InputSys.InputTime:
                     #print("left")
                     InputSys.KeyBuffer.append(LEFT)
-            elif event.key == SDLK_UP:
+            if event.key == SDLK_UP:
                 InputSys.key = UP
                 if InputSys.InputTime:
                     #print("up")
                     InputSys.KeyBuffer.append(UP)
-            elif event.key == SDLK_DOWN:
+            if event.key == SDLK_DOWN:
                 InputSys.key = DOWN
                 if InputSys.InputTime:
                     #print("down")
                     InputSys.KeyBuffer.append(DOWN)
-            elif event.key == SDLK_z:
+            if event.key == SDLK_z:
                 InputSys.key = Z
                 if InputSys.InputTime:
                     #print("z")
                     InputSys.KeyBuffer.append(Z)
-            elif event.key == SDLK_x:
+            if event.key == SDLK_x:
                 InputSys.key = X
                 if InputSys.InputTime:
                     #print("x")
                     InputSys.KeyBuffer.append(X)
-        elif event.type == SDL_KEYUP:
+        if event.type == SDL_KEYUP:
             if event.key == SDLK_RIGHT:
                 InputSys.KeyBuffer.append(EMPTY)
                 #print("up")
-            elif event.key == SDLK_LEFT:
+            if event.key == SDLK_LEFT:
                 InputSys.KeyBuffer.append(EMPTY)
                 #print("up")
 
@@ -610,7 +639,8 @@ def update():
         if collision(i,boy):
             boy.getHit()
         if collision(boy,i):
-            i.getHit()
+            if i.state != MON_STATE_DIE:
+                i.getHit()
 
 def draw():
     clear_canvas()
