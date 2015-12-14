@@ -108,8 +108,8 @@ class Monster:
         self.attackTime = -1
         self.hbWidth = 0
         self.hbHeight = 0
-        self.hbPosX = 0
-        self.hbPosY = 0
+        self.hbPosX = 2000
+        self.hbPosY = 2000
 
         self.jumpHeight=10;
         self.gravity = 200;
@@ -258,16 +258,17 @@ class Monster:
     def get_hb(self):
         return (self.x +self.hbPosX)- self.hbWidth/2, (self.y +self.hbPosY) - self.hbHeight/2, (self.x +self.hbPosX)+self.hbWidth/2,(self.y +self.hbPosY) +self.hbHeight/2
     def set_hb(self):
-        if self.attackTime <= time.time() and self.attackTime+ 0.1 >= time.time():
-            self.hbWidth = 50
-            self.hbHeight = 50
-            self.hbPosX = 50*self.dir
-            self.hbPosY = 0
-        else:
-            self.hbWidth = 0
-            self.hbHeight = 0
-            self.hbPosX = 2000
-            self.hbPosY = 2000
+        if self.state != MON_STATE_DIE:
+            if self.attackTime <= time.time() and self.attackTime+ 0.1 >= time.time():
+                self.hbWidth = 50
+                self.hbHeight = 50
+                self.hbPosX = 50*self.dir
+                self.hbPosY = 0
+            else:
+                self.hbWidth = 0
+                self.hbHeight = 0
+                self.hbPosX = 2000
+                self.hbPosY = 2000
     def draw_bb(self):
         draw_rectangle(*self.get_bb())
     def draw_hb(self):
