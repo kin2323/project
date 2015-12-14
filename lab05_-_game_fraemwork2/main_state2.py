@@ -9,17 +9,17 @@ from pico2d import *
 
 import game_framework
 import title_state
-import main_state2
+import main_state3
 from ui import UI
 
 
 
-name = "MainState"
+name = "MainState2"
 
 SKILL_MAXNUM = 6
-MON_MAXNUM = 1
+MON_MAXNUM = 3
 RIGHT,LEFT,UP,DOWN,Z,X,EMPTY = range(7)
-STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED,STATE_DIE = range(7)
+STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED = range(6)
 MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED, MON_STATE_DIE = range(5)
 STATE1,STATE2,STATE3 = range(3)
 InputKey = False
@@ -30,6 +30,7 @@ grass = None
 InputSys = None
 monster = None
 ui = None
+state = STATE1
 
 def collision(a,b):
     left_a, bottom_a, right_a, top_a = a.get_hb()
@@ -331,7 +332,7 @@ class Boy:
         self.hbPosY = 0
         self.hp = 800
         self.inSkill = False
-        #self.skImage = None
+        self.skImage = None
 
         self.boySkill3 = load_wav('sound//sm_blood_rave_storm.ogg')
         self.boySkill2 = load_wav('sound//sm_upslash.ogg')
@@ -434,9 +435,7 @@ class Boy:
             self.State = STATE_ATTACKED
         else:
             print("die")
-            self.State = STATE_DIE
             game_framework.change_state(title_state)
-
     #바운딩 박스 구하기
     def get_bb(self):
         return self.x - self.width/2, self.y - self.height/2, self.x+self.width/2,self.y +self.height/2
@@ -587,6 +586,15 @@ def enter():
     ui = UI()
     monster = [Monster() for i in range(MON_MAXNUM)]
 
+def changeState():
+    if state == STATE2:
+        MON_MAXNUM = 3
+        monster = [Monster() for i in range(MON_MAXNUM)]
+    elif state == STATE3:
+        MON_MAXNUM = 3
+        monster = [Monster() for i in range(MON_MAXNUM)]
+
+
 def exit():
     global boy, grass,skill,InputSys,monster,ui
     del(boy)
@@ -670,15 +678,14 @@ def update():
         i.update()
     boy.update()
     for i in monster:
-        if boy.State != STATE_DIE:
-            if collision(i,boy):
-                boy.getHit()
-            if collision(boy,i):
-                if i.state != MON_STATE_DIE:
-                    i.getHit()
+        if collision(i,boy):
+            boy.getHit()
+        if collision(boy,i):
+            if i.state != MON_STATE_DIE:
+                i.getHit()
     if len(monster) == 0 and boy.x >= 750:
         print("clear")
-        game_framework.change_state(main_state2)
+        game_framework.change_state(main_state3)
 
 def draw():
     clear_canvas()

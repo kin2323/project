@@ -14,16 +14,15 @@ from ui import UI
 
 
 
-name = "MainState"
+name = "MainState3"
 
 SKILL_MAXNUM = 6
-MON_MAXNUM = 1
+MON_MAXNUM = 10
 RIGHT,LEFT,UP,DOWN,Z,X,EMPTY = range(7)
-STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED,STATE_DIE = range(7)
+STATE_IDLE, STATE_MOVE, STATE_SKILL1, STATE_SKILL2,STATE_SKILL3,STATE_ATTACKED = range(6)
 MON_STATE_IDLE,MON_STATE_MOVE,MON_STATE_ATTACK,MON_STATE_ATTACKED, MON_STATE_DIE = range(5)
 STATE1,STATE2,STATE3 = range(3)
 InputKey = False
-
 boy = None
 skill = None
 grass = None
@@ -75,12 +74,18 @@ class Skill:
 class Grass:
     def __init__(self):
         self.image = load_image('map.png')
+        self.clearImage = load_image('clear.jpg')
         self.bgm = load_music('sound//bgm.mp3')
         self.bgm.set_volume(64)
         self.bgm.repeat_play()
+        self.isClear = False
 
     def draw(self):
         self.image.draw(400,300)
+        if self.isClear == True:
+            print("mapppp")
+            self.clearImage.draw(400,300)
+
 #몬스터
 class Monster:
     image = None
@@ -331,7 +336,7 @@ class Boy:
         self.hbPosY = 0
         self.hp = 800
         self.inSkill = False
-        #self.skImage = None
+        self.skImage = None
 
         self.boySkill3 = load_wav('sound//sm_blood_rave_storm.ogg')
         self.boySkill2 = load_wav('sound//sm_upslash.ogg')
@@ -434,7 +439,6 @@ class Boy:
             self.State = STATE_ATTACKED
         else:
             print("die")
-            self.State = STATE_DIE
             game_framework.change_state(title_state)
 
     #바운딩 박스 구하기
@@ -587,6 +591,15 @@ def enter():
     ui = UI()
     monster = [Monster() for i in range(MON_MAXNUM)]
 
+def changeState():
+    if state == STATE2:
+        MON_MAXNUM = 3
+        monster = [Monster() for i in range(MON_MAXNUM)]
+    elif state == STATE3:
+        MON_MAXNUM = 3
+        monster = [Monster() for i in range(MON_MAXNUM)]
+
+
 def exit():
     global boy, grass,skill,InputSys,monster,ui
     del(boy)
@@ -670,15 +683,13 @@ def update():
         i.update()
     boy.update()
     for i in monster:
-        if boy.State != STATE_DIE:
-            if collision(i,boy):
-                boy.getHit()
-            if collision(boy,i):
-                if i.state != MON_STATE_DIE:
-                    i.getHit()
-    if len(monster) == 0 and boy.x >= 750:
-        print("clear")
-        game_framework.change_state(main_state2)
+        if collision(i,boy):
+            boy.getHit()
+        if collision(boy,i):
+            if i.state != MON_STATE_DIE:
+                i.getHit()
+    if len(monster) == 0:
+        grass.isClear = True
 
 def draw():
     clear_canvas()
